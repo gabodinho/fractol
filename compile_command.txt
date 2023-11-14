@@ -1,0 +1,1 @@
+gcc main.c  libmlx42.a -I../MLX42/include -ldl -lglfw -pthread -lm 

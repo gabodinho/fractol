@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/10 13:18:17 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/14 22:03:33 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #define WIDTH 256
 #define HEIGHT 256
 #ifndef THRESH
-# define THRESH 5
+# define THRESH 4
 # endif
 #ifndef MAXRUNS
 # define MAXRUNS 20
@@ -39,8 +39,8 @@ void	comp_sq(double *comp)
 		return;
 	real = comp[0];
 	img = comp[1];
-	comp[0] = pow(real, 2) - pow(img, 2);
-	comp[1] = real * img;
+	comp[0] = real * real - img * img;
+	comp[1] = real * img * 2;
 }
 
 void	comp_sum(double *comp1, double *comp2)
@@ -57,7 +57,7 @@ double	comp_abs(double *comp)
 
 	if (!comp)
 		return (-1);
-	res = sqrt(pow(comp[0], 2) + pow(comp[1], 2));
+	res = comp[0] * comp[0]  + comp[1] * comp[1];
 	return res;
 }
 
@@ -74,10 +74,6 @@ double	mandel_step(double *prev, double *c)
 	comp_sum(prev, c);
 	return (comp_abs(prev));
 }
-
-/* idea to take a function as an argument to work with other sets. Prototype looks like this:
-int	steps(void *(*set)(double *, double *),double *point, int max, double thresh)
-*/
 
 int steps_mandel(double *point)
 {
