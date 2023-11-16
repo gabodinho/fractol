@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/16 01:29:38 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/16 12:17:10 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@
 #define WIDTH 512
 #define HEIGHT 512
 #ifndef THRESH
-# define THRESH 4
+# define THRESH 10
 # endif
 #ifndef MAXRUNS
-# define MAXRUNS 20
+# define MAXRUNS 50
 # endif
 
 //
@@ -249,6 +249,40 @@ void	move_view(void *input)
 	mlx_image_to_window(mlx, lim -> img, 0, 0);
 }
 
+void	adapt_lim(limits_t *lim, double rate)
+{
+	double	x_factor;
+	double	y_factor;
+
+	x_factor = (lim -> x_max - lim -> x_min) / rate;
+	y_factor = (lim -> y_max - lim -> y_min) / rate;
+	lim -> x_max += x_factor / 2;
+	lim -> x_min -= x_factor / 2;
+	lim -> y_max += y_factor / 2;
+	lim -> y_min -= y_factor / 2;
+	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
+	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	draw_image(lim -> img, *lim);
+	mlx_image_to_window(lim -> window, lim -> img,0 ,0);
+}
+
+void zoom_hook(double xdelta, double ydelta, void* param)
+{
+	limits_t	*lim;
+
+	lim = (limits_t *) param;
+	if (ydelta > 0)
+	{
+		adapt_lim(lim, 2);
+		printf("up\n");
+	}
+	else if (ydelta < 0)
+	{
+		adapt_lim(lim, -2);
+		printf("down\n");
+	}
+}
+
 int32_t main(int32_t argc, const char* argv[])
 {
 	mlx_t* mlx;
@@ -277,6 +311,7 @@ int32_t main(int32_t argc, const char* argv[])
 	draw_image(image, lim);
     mlx_image_to_window(mlx, image, 0, 0);
 	mlx_loop_hook(mlx, move_view, &lim);
+	mlx_scroll_hook(mlx, zoom_hook, &lim);
 
 	mlx_loop(mlx);
 	mlx_terminate(mlx);
