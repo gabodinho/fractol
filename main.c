@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/16 12:17:10 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/17 00:42:49 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@
 #define WIDTH 512
 #define HEIGHT 512
 #ifndef THRESH
-# define THRESH 10
+# define THRESH 4
 # endif
 #ifndef MAXRUNS
-# define MAXRUNS 50
+# define MAXRUNS 100
 # endif
 
 //
@@ -159,10 +159,35 @@ int	cmap_def(int steps)
 	return ((red << 24) | (green << 16) | (0x00 << 8) | 0xFF);
 }
 
+int	cmap_advanced(int steps)
+{
+	uint8_t	red;
+	uint8_t	green;
+
+	if (steps == MAXRUNS)
+	{
+		green = 0;
+		red = 0;
+	}
+	else if (MAXRUNS / 2 <= steps)
+	{
+		green = 255;
+		red = 410 * steps / MAXRUNS - 205;
+	}
+	else
+	{
+		red = 0;
+		green = 510 * steps / MAXRUNS;
+	}
+	return ((red << 24) | (green << 16) | (0x00 << 8) | 0xFF);
+}
+
 int	get_colour(int steps, int cmap)
 {
 	if (cmap == 1)
 		return (cmap_def(steps));
+	else if (cmap == 2)
+		return (cmap_advanced(steps));
 	return (-1);
 }
 
@@ -193,7 +218,7 @@ void	draw_image(mlx_image_t *img, limits_t lim)
 		while (j < HEIGHT)
 		{
 			pixel_idx = (j * WIDTH * 4) + (i * 4);
-			colour = get_colour(get_steps(i, j, lim), 1);
+			colour = get_colour(get_steps(i, j, lim), 2);
 			put_colour((img -> pixels) + pixel_idx, colour);
 //			printf("%d %d %d %d\n", img -> pixels[pixel_idx], img->pixels[pixel_idx+1], img->pixels[pixel_idx+2],img->pixels[pixel_idx+3]);
 			j++;
@@ -226,6 +251,20 @@ void	move_lim(limits_t *lim, int direc)
 	}
 	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
 	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	draw_image(lim -> img, *lim);
+	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
+}
+
+void	reset_view(limits_t *lim)
+{
+	lim -> x_min = -2.5;
+	lim -> x_max = 0.5;
+	lim -> y_min = -1.5;
+	lim -> y_max = 1.5;
+	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
+	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	draw_image(lim -> img, *lim);
+	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
 }
 
 void	move_view(void *input)
@@ -237,6 +276,8 @@ void	move_view(void *input)
 	mlx = lim -> window;
 	if (mlx_is_key_down(mlx, MLX_KEY_ESCAPE))
 		mlx_close_window(mlx);
+	if (mlx_is_key_down(mlx, MLX_KEY_SPACE))
+		reset_view(lim);
 	if (mlx_is_key_down(mlx, MLX_KEY_UP))
 		move_lim(lim, 1);
 	if (mlx_is_key_down(mlx, MLX_KEY_DOWN))
@@ -245,8 +286,8 @@ void	move_view(void *input)
 		move_lim(lim, 4);
 	if (mlx_is_key_down(mlx, MLX_KEY_RIGHT))
 		move_lim(lim, 2);
-	draw_image(lim -> img, *lim);
-	mlx_image_to_window(mlx, lim -> img, 0, 0);
+//	draw_image(lim -> img, *lim);
+//	mlx_image_to_window(mlx, lim -> img, 0, 0);
 }
 
 void	adapt_lim(limits_t *lim, double rate)
