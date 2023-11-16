@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/14 22:03:33 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/16 01:29:38 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 #include <MLX42/MLX42.h>
 #include <string.h>
 
-#define WIDTH 256
-#define HEIGHT 256
+#define WIDTH 512
+#define HEIGHT 512
 #ifndef THRESH
 # define THRESH 4
 # endif
@@ -101,6 +101,8 @@ int steps_mandel(double *point)
 
 typedef	struct limits_s
 {
+	mlx_t	*window;
+	mlx_image_t*	img;
 	double	x_min;
 	double	x_max;
 	double	y_min;
@@ -109,10 +111,12 @@ typedef	struct limits_s
 	double	delta_y;
 }	limits_t;
 
-limits_t	init_lim(void)
+limits_t	init_lim(mlx_t *mlx, mlx_image_t *image)
 {
 	limits_t	lim;
 
+	lim.window= mlx;
+	lim.img = image;
 	lim.x_min = -2.5;
 	lim.x_max = 0.5;
 	lim.y_min = -1.5;
@@ -198,6 +202,53 @@ void	draw_image(mlx_image_t *img, limits_t lim)
 	}
 }
 
+void	move_lim(limits_t *lim, int direc)
+{
+	if (direc == 1)
+	{
+		lim -> y_max += lim -> delta_y * HEIGHT / 4;
+		lim -> y_min += lim -> delta_y * HEIGHT / 4;
+	}
+	else if (direc == 2)
+	{
+		lim -> x_max += lim -> delta_x * WIDTH / 4;
+		lim -> x_min += lim -> delta_x * WIDTH / 4;
+	}
+	else if (direc == 3)
+	{
+		lim -> y_max -= lim -> delta_y * HEIGHT / 4;
+		lim -> y_min -= lim -> delta_y * HEIGHT / 4;
+	}
+	else
+	{
+		lim -> x_max -= lim -> delta_x * WIDTH / 4;
+		lim -> x_min -= lim -> delta_x * WIDTH / 4;
+	}
+	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
+	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+}
+
+void	move_view(void *input)
+{
+	limits_t	*lim;
+	mlx_t	*mlx;
+
+	lim = (limits_t *) input;
+	mlx = lim -> window;
+	if (mlx_is_key_down(mlx, MLX_KEY_ESCAPE))
+		mlx_close_window(mlx);
+	if (mlx_is_key_down(mlx, MLX_KEY_UP))
+		move_lim(lim, 1);
+	if (mlx_is_key_down(mlx, MLX_KEY_DOWN))
+		move_lim(lim, 3);
+	if (mlx_is_key_down(mlx, MLX_KEY_LEFT))
+		move_lim(lim, 4);
+	if (mlx_is_key_down(mlx, MLX_KEY_RIGHT))
+		move_lim(lim, 2);
+	draw_image(lim -> img, *lim);
+	mlx_image_to_window(mlx, lim -> img, 0, 0);
+}
+
 int32_t main(int32_t argc, const char* argv[])
 {
 	mlx_t* mlx;
@@ -222,10 +273,10 @@ int32_t main(int32_t argc, const char* argv[])
 		puts(mlx_strerror(mlx_errno));
 		return(EXIT_FAILURE);
 	}
-	lim = init_lim();
+	lim = init_lim(mlx, image);
 	draw_image(image, lim);
     mlx_image_to_window(mlx, image, 0, 0);
-//	mlx_loop_hook(mlx, ft_hook, mlx);
+	mlx_loop_hook(mlx, move_view, &lim);
 
 	mlx_loop(mlx);
 	mlx_terminate(mlx);
