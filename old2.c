@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   burning_ship.c                                     :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/19 23:57:09 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/19 15:19:37 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,68 +20,73 @@
 
 #define WIDTH 512
 #define HEIGHT 512
-#define THRESH 4
+#ifndef THRESH
+# define THRESH 4
+# endif
 #ifndef MAXRUNS
 # define MAXRUNS 100
-#endif
+# endif
 
-typedef double	(*t_f)(double *input1, double *input2);
-
-typedef	struct limits_s
+void	comp_sq(double *comp)
 {
-	mlx_t	*window;
-	mlx_image_t*	img;
-	int		type;
-	int		cmap;
-	double	c[2];
-	double	x_min;
-	double	x_max;
-	double	y_min;
-	double	y_max;
-	double	dx;
-	double	dy;
-}	t_limits;
+	double	real;
+	double	img;
 
-typedef	struct input_s
+	if (!comp)
+		return;
+	real = comp[0];
+	img = comp[1];
+	comp[0] = real * real - img * img;
+	comp[1] = real * img * 2;
+}
+
+void	comp_sum(double *comp1, double *comp2)
 {
-	int	type;
-	int	julia;
-	int	cmap;
-	int	success;
-}	t_input;
+	if (!comp1 || !comp2)
+		return;
+	comp1[0] = comp1[0] + comp2[0];
+	comp1[1] = comp1[1] + comp2[1];
+}
+
+double	comp_abs(double *comp)
+{
+	double	res;
+
+	if (!comp)
+		return (-1);
+	res = comp[0] * comp[0]  + comp[1] * comp[1];
+	return res;
+}
+
+void	printc(double *comp)
+{
+	printf("real: %f img: %f\n", comp[0], comp[1]);
+}
 
 double	mandel_step(double *prev, double *c)
 {
-	double	temp;
-
-	temp = prev[0] * prev[0] - prev[1] * prev[1] + c[0];
-	prev[1] = prev[0] * prev[1] * 2 + c[1];
-	prev[0] = temp;
-	return (prev[0] * prev[0] + prev[1] * prev[1]);
+	if (!prev || !c)
+		return (-1);
+	comp_sq(prev);
+	comp_sum(prev, c);
+	return (comp_abs(prev));
 }
 
-double	burning_step(double *prev, double *c)
+int steps_mandel(double *point)
 {
-	double	temp;
-
-	temp = prev[0] * prev[0] - prev[1] * prev[1] + c[0];
-	prev[1] = fabs(prev[0] * prev[1]) * 2 + c[1];
-	prev[0] = temp;
-	return (prev[0] * prev[0] + prev[1] * prev[1]);
-}
-
-int steps_mandel(double *point, t_f handler)
-{
-	int		i;
+	int	i;
 	double	res;
 	double	prev[2];
 
 	i = 0;
-	res = 0;
+	res = -1;
 	prev[0] = 0;
 	prev[1] = 0;
-	while (i++ < MAXRUNS && res < THRESH)
-		res = handler(prev, point);
+	while (i < MAXRUNS && res < THRESH)
+	{
+		res = mandel_step(prev, point);
+		i++;
+	}
 	return i;
 }
 
@@ -96,6 +101,20 @@ int steps_julia(double *point, double *c)
 		res = mandel_step(point, c);
 	return i;
 }
+
+typedef	struct limits_s
+{
+	mlx_t	*window;
+	mlx_image_t*	img;
+	int		type;
+	double	c[2];
+	double	x_min;
+	double	x_max;
+	double	y_min;
+	double	y_max;
+	double	dx;
+	double	dy;
+}	limits_t;
 
 void	set_c(int type, int param, double *c)
 {
@@ -117,17 +136,21 @@ void	set_c(int type, int param, double *c)
 			c[1] = 0.156;
 		}
 	}
+	else
+	{
+		c[0] = 0;
+		c[1] = 0;
+	}
 }			
 
-t_limits	init_lim(mlx_t *mlx, mlx_image_t *img, int type, int par, int cmap)
+limits_t	init_lim(mlx_t *mlx, mlx_image_t *image, int type, int param)
 {
-	t_limits	lim;
+	limits_t	lim;
 
 	lim.window= mlx;
-	lim.img = img;
+	lim.img = image;
 	lim.type = type;
-	lim.cmap = cmap;
-	set_c(type, par, lim.c);
+	set_c(type, param, lim.c);
 	if (type == 1)
 	{
 		lim.x_min = -2.5;
@@ -137,29 +160,26 @@ t_limits	init_lim(mlx_t *mlx, mlx_image_t *img, int type, int par, int cmap)
 	}
 	else
 	{
-		lim.x_min = -2;
-		lim.x_max = 2;
-		lim.y_min = -2;
-		lim.y_max = 2;
+		lim.x_min = -1.5;
+		lim.x_max = 1.5;
+		lim.y_min = -1.5;
+		lim.y_max = 1.5;
 	}
 	lim.dx = (lim.x_max - lim.x_min) / WIDTH;
 	lim.dy = (lim.y_max - lim.y_min) / HEIGHT;
 	return (lim);
 }
 
-int	get_steps(int i, int j, t_limits lim)
+int	get_steps(int i, int j, limits_t lim)
 {
 	double	point[2];
 
 	point[0] = lim.x_min + (lim.dx * i);
 	point[1] = lim.y_max - (lim.dy * j);
 	if (lim.type == 1)
-		return (steps_mandel(point, mandel_step));
-	else if (lim.type == 2)
-		return (steps_julia(point, lim.c));
+		return (steps_mandel(point));
 	else
-		return (steps_mandel(point, burning_step));
-
+		return (steps_julia(point, lim.c));
 }
 
 // black to red
@@ -168,8 +188,7 @@ int	cmap_def(int steps)
 	uint8_t	red;
 	uint8_t	green;
 
-//	printf("%d", steps);
-	if (steps >= MAXRUNS)
+	if (steps == MAXRUNS)
 	{
 		green = 0;
 		red = 0;
@@ -192,7 +211,7 @@ int	cmap_advanced(int steps)
 	uint8_t	red;
 	uint8_t	green;
 
-	if (steps >= MAXRUNS)
+	if (steps == MAXRUNS)
 	{
 		green = 0;
 		red = 0;
@@ -230,7 +249,7 @@ void	put_colour(uint8_t *pixels, int rgba)
 	return ;
 }
 
-void	draw_image(mlx_image_t *img, t_limits lim)
+void	draw_image(mlx_image_t *img, limits_t lim)
 {
 	int i;
 	int	j;
@@ -246,7 +265,7 @@ void	draw_image(mlx_image_t *img, t_limits lim)
 		while (j < HEIGHT)
 		{
 			pixel_idx = (j * WIDTH * 4) + (i * 4);
-			colour = get_colour(get_steps(i, j, lim), lim.cmap);	// +++ param für cmap
+			colour = get_colour(get_steps(i, j, lim), 1);			// +++ param für cmap
 			put_colour((img -> pixels) + pixel_idx, colour);
 			j++;
 		}
@@ -254,7 +273,7 @@ void	draw_image(mlx_image_t *img, t_limits lim)
 	}
 }
 
-void	move_lim(t_limits *lim, int direc)
+void	move_lim(limits_t *lim, int direc)
 {
 	if (direc == 1)
 	{
@@ -282,7 +301,7 @@ void	move_lim(t_limits *lim, int direc)
 	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
 }
 
-void	reset_view(t_limits *lim)
+void	reset_view(limits_t *lim)
 {
 	if (lim -> type == 1)
 	{
@@ -298,7 +317,6 @@ void	reset_view(t_limits *lim)
 		lim -> y_min = -1.5;
 		lim -> y_max = 1.5;
 	}
-	// keep in mind burning ship
 	lim -> dx = (lim -> x_max - lim -> x_min) / WIDTH;
 	lim -> dy = (lim -> y_max - lim -> y_min) / HEIGHT;
 	draw_image(lim -> img, *lim);
@@ -307,10 +325,10 @@ void	reset_view(t_limits *lim)
 
 void	move_view(void *input)
 {
-	t_limits	*lim;
+	limits_t	*lim;
 	mlx_t	*mlx;
 
-	lim = (t_limits *) input;
+	lim = (limits_t *) input;
 	mlx = lim -> window;
 	if (mlx_is_key_down(mlx, MLX_KEY_ESCAPE))
 		mlx_close_window(mlx);
@@ -326,7 +344,7 @@ void	move_view(void *input)
 		move_lim(lim, 2);
 }
 
-void	adapt_lim(t_limits *lim, double rate)
+void	adapt_lim(limits_t *lim, double rate)
 {
 	double	dx_n;
 	double	dy_n;
@@ -349,10 +367,9 @@ void	adapt_lim(t_limits *lim, double rate)
 
 void zoom_hook(double xdelta, double ydelta, void* param)
 {
-	t_limits	*lim;
+	limits_t	*lim;
 
-	lim = (t_limits *) param;
-	(void) xdelta;
+	lim = (limits_t *) param;
 	if (ydelta > 0)
 	{
 		adapt_lim(lim, 2);
@@ -365,74 +382,36 @@ void zoom_hook(double xdelta, double ydelta, void* param)
 	}
 }
 
-void	put_error(int code)
-{
-	if (code < 3)
-	{
-		if (code == 1)
-			printf("Invalid parameter(s)\n");
-		else if (code == 2)
-			printf("missing/too many parameter(s)\n");
-		printf(" 1st param: 1=mandelbrot, 2=julia, 3=burning ship\n");
-		printf(" [2nd param] (julia points): from 1 to 3, def=1\n");
-		printf(" [3rd param] (colour map): from 1 to 2, def=1\n");
-	}
-	else
-		printf("mlx error");
-	exit(EXIT_FAILURE);
-
-}
-
-void	check_semantic(t_input res)
-{
-	if (res.type > 0 && res.type < 4)
-	{
-		if (res.julia > 0 && res.julia < 4)
-		{
-			if (res.cmap > 0 && res.cmap < 3)
-				return;
-		}
-	}
-	put_error(1);
-}		
-
-t_input	check_input(int32_t argc, const char *argv[])
-{
-	t_input	res;
-
-	if (argc > 1 && argc < 5)
-	{
-		res.type = atoi(argv[1]);		//------------------change for ft_atoi !!
-		res.julia = 1;
-		res.cmap = 1;
-	}
-	else
-		put_error(2);
-	if (argc >= 3)
-		res.julia = atoi(argv[2]);
-	if (argc == 4)
-		res.cmap = atoi(argv[3]);
-	check_semantic(res);
-	return (res);
-}
-
 int32_t main(int32_t argc, const char* argv[])
 {
 	mlx_t* mlx;
 	mlx_image_t* image;
-	t_limits	lim;
-	t_input		input;
+	limits_t	lim;
 
-	input = check_input(argc, argv);
-	mlx = mlx_init(WIDTH, HEIGHT, "MLX42", true);
-	image = mlx_new_image(mlx, WIDTH, HEIGHT);
-	if (!mlx || !image)
-		put_error(3);
-	lim = init_lim(mlx, image, input.type, input.julia, input.cmap);
+	// Gotta error check this stuff
+	if (!(mlx = mlx_init(WIDTH, HEIGHT, "MLX42", true)))
+	{
+		puts(mlx_strerror(mlx_errno));
+		return(EXIT_FAILURE);
+	}
+	if (!(image = mlx_new_image(mlx, WIDTH, HEIGHT)))
+	{
+		mlx_close_window(mlx);
+		puts(mlx_strerror(mlx_errno));
+		return(EXIT_FAILURE);
+	}
+	if (mlx_image_to_window(mlx, image, 0, 0) == -1)
+	{
+		mlx_close_window(mlx);
+		puts(mlx_strerror(mlx_errno));
+		return(EXIT_FAILURE);
+	}
+	lim = init_lim(mlx, image, 1, 2);			// +++ param 1: type; param2: julia_c
 	draw_image(image, lim);
     mlx_image_to_window(mlx, image, 0, 0);
 	mlx_loop_hook(mlx, move_view, &lim);
 	mlx_scroll_hook(mlx, zoom_hook, &lim);
+
 	mlx_loop(mlx);
 	mlx_terminate(mlx);
 	return (EXIT_SUCCESS);
