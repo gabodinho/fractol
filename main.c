@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/17 00:42:49 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/19 02:00:50 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,6 @@
 # define MAXRUNS 100
 # endif
 
-//
-//	----- input from utils ----
-//
 void	comp_sq(double *comp)
 {
 	double	real;
@@ -85,44 +82,91 @@ int steps_mandel(double *point)
 	res = -1;
 	prev[0] = 0;
 	prev[1] = 0;
-// check input in the beginning
 	while (i < MAXRUNS && res < THRESH)
 	{
 		res = mandel_step(prev, point);
-//		printf("%f\n", res);
 		i++;
 	}
-//	printf("%d\n", i);
 	return i;
 }
-//
-//	----- end utils -----
-//
+
+int steps_julia(double *point, double *c)
+{
+	int	i;
+	double	res;
+
+	i = 0;
+	res = -1;
+	while (i++ < MAXRUNS && res < THRESH)
+		res = mandel_step(point, c);
+	return i;
+}
 
 typedef	struct limits_s
 {
 	mlx_t	*window;
 	mlx_image_t*	img;
+	int		type;
+	double	c[2];
 	double	x_min;
 	double	x_max;
 	double	y_min;
 	double	y_max;
-	double	delta_x;
-	double	delta_y;
+	double	dx;
+	double	dy;
 }	limits_t;
 
-limits_t	init_lim(mlx_t *mlx, mlx_image_t *image)
+void	set_c(int type, int param, double *c)
+{
+	if (type == 2)
+	{
+		if (param == 0)
+		{
+			c[0] = 0.285;
+			c[1] = 0.01;
+		}
+		else if (param == 1)
+		{
+			c[0] = -0.4;
+			c[1] = 0.6;
+		}
+		else if (param == 2)
+		{
+			c[0] = -0.8;
+			c[1] = 0.156;
+		}
+	}
+	else
+	{
+		c[0] = 0;
+		c[1] = 0;
+	}
+}			
+
+limits_t	init_lim(mlx_t *mlx, mlx_image_t *image, int type, int param)
 {
 	limits_t	lim;
 
 	lim.window= mlx;
 	lim.img = image;
-	lim.x_min = -2.5;
-	lim.x_max = 0.5;
-	lim.y_min = -1.5;
-	lim.y_max = 1.5;
-	lim.delta_x = (lim.x_max - lim.x_min) / WIDTH;
-	lim.delta_y = (lim.y_max - lim.y_min) / HEIGHT;
+	lim.type = type;
+	set_c(type, param, lim.c);
+	if (type == 1)
+	{
+		lim.x_min = -2.5;
+		lim.x_max = 0.5;
+		lim.y_min = -1.5;
+		lim.y_max = 1.5;
+	}
+	else
+	{
+		lim.x_min = -1.5;
+		lim.x_max = 1.5;
+		lim.y_min = -1.5;
+		lim.y_max = 1.5;
+	}
+	lim.dx = (lim.x_max - lim.x_min) / WIDTH;
+	lim.dy = (lim.y_max - lim.y_min) / HEIGHT;
 	return (lim);
 }
 
@@ -130,9 +174,12 @@ int	get_steps(int i, int j, limits_t lim)
 {
 	double	point[2];
 
-	point[0] = lim.x_min + (lim.delta_x * i);
-	point[1] = lim.y_max - (lim.delta_y * j);
-	return (steps_mandel(point));
+	point[0] = lim.x_min + (lim.dx * i);
+	point[1] = lim.y_max - (lim.dy * j);
+	if (lim.type == 1)
+		return (steps_mandel(point));
+	else
+		return (steps_julia(point, lim.c));
 }
 
 // black to red
@@ -218,9 +265,8 @@ void	draw_image(mlx_image_t *img, limits_t lim)
 		while (j < HEIGHT)
 		{
 			pixel_idx = (j * WIDTH * 4) + (i * 4);
-			colour = get_colour(get_steps(i, j, lim), 2);
+			colour = get_colour(get_steps(i, j, lim), 1);			// +++ param für cmap
 			put_colour((img -> pixels) + pixel_idx, colour);
-//			printf("%d %d %d %d\n", img -> pixels[pixel_idx], img->pixels[pixel_idx+1], img->pixels[pixel_idx+2],img->pixels[pixel_idx+3]);
 			j++;
 		}
 		i++;
@@ -231,38 +277,48 @@ void	move_lim(limits_t *lim, int direc)
 {
 	if (direc == 1)
 	{
-		lim -> y_max += lim -> delta_y * HEIGHT / 4;
-		lim -> y_min += lim -> delta_y * HEIGHT / 4;
+		lim -> y_max += lim -> dy * HEIGHT / 4;
+		lim -> y_min += lim -> dy * HEIGHT / 4;
 	}
 	else if (direc == 2)
 	{
-		lim -> x_max += lim -> delta_x * WIDTH / 4;
-		lim -> x_min += lim -> delta_x * WIDTH / 4;
+		lim -> x_max += lim -> dx * WIDTH / 4;
+		lim -> x_min += lim -> dx * WIDTH / 4;
 	}
 	else if (direc == 3)
 	{
-		lim -> y_max -= lim -> delta_y * HEIGHT / 4;
-		lim -> y_min -= lim -> delta_y * HEIGHT / 4;
+		lim -> y_max -= lim -> dy * HEIGHT / 4;
+		lim -> y_min -= lim -> dy * HEIGHT / 4;
 	}
 	else
 	{
-		lim -> x_max -= lim -> delta_x * WIDTH / 4;
-		lim -> x_min -= lim -> delta_x * WIDTH / 4;
+		lim -> x_max -= lim -> dx * WIDTH / 4;
+		lim -> x_min -= lim -> dx * WIDTH / 4;
 	}
-	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
-	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	lim -> dx = (lim -> x_max - lim -> x_min) / WIDTH;
+	lim -> dy = (lim -> y_max - lim -> y_min) / HEIGHT;
 	draw_image(lim -> img, *lim);
 	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
 }
 
 void	reset_view(limits_t *lim)
 {
-	lim -> x_min = -2.5;
-	lim -> x_max = 0.5;
-	lim -> y_min = -1.5;
-	lim -> y_max = 1.5;
-	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
-	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	if (lim -> type == 1)
+	{
+		lim -> x_min = -2.5;
+		lim -> x_max = 0.5;
+		lim -> y_min = -1.5;
+		lim -> y_max = 1.5;
+	}
+	else if (lim -> type == 2)
+	{
+		lim -> x_min = -1.5;
+		lim -> x_max = 1.5;
+		lim -> y_min = -1.5;
+		lim -> y_max = 1.5;
+	}
+	lim -> dx = (lim -> x_max - lim -> x_min) / WIDTH;
+	lim -> dy = (lim -> y_max - lim -> y_min) / HEIGHT;
 	draw_image(lim -> img, *lim);
 	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
 }
@@ -286,25 +342,27 @@ void	move_view(void *input)
 		move_lim(lim, 4);
 	if (mlx_is_key_down(mlx, MLX_KEY_RIGHT))
 		move_lim(lim, 2);
-//	draw_image(lim -> img, *lim);
-//	mlx_image_to_window(mlx, lim -> img, 0, 0);
 }
 
 void	adapt_lim(limits_t *lim, double rate)
 {
-	double	x_factor;
-	double	y_factor;
-
-	x_factor = (lim -> x_max - lim -> x_min) / rate;
-	y_factor = (lim -> y_max - lim -> y_min) / rate;
-	lim -> x_max += x_factor / 2;
-	lim -> x_min -= x_factor / 2;
-	lim -> y_max += y_factor / 2;
-	lim -> y_min -= y_factor / 2;
-	lim -> delta_x = (lim -> x_max - lim -> x_min) / WIDTH;
-	lim -> delta_y = (lim -> y_max - lim -> y_min) / HEIGHT;
+	double	dx_n;
+	double	dy_n;
+	int32_t	x_pos;
+	int32_t	y_pos;
+	
+	dx_n = lim -> dx / rate;
+	dy_n = lim -> dy / rate;
+	mlx_get_mouse_pos(lim -> window, &x_pos, &y_pos);
+	y_pos = HEIGHT - y_pos;
+	lim -> x_max = lim -> x_min + x_pos * lim -> dx + (WIDTH - x_pos) * dx_n;
+	lim -> x_min = lim -> x_max - WIDTH * dx_n;
+	lim -> y_max = lim -> y_min + y_pos * lim -> dy + (HEIGHT - y_pos) * dy_n;
+	lim -> y_min = lim -> y_max - HEIGHT * dy_n;
+	lim -> dx = dx_n;
+	lim -> dy = dy_n;
 	draw_image(lim -> img, *lim);
-	mlx_image_to_window(lim -> window, lim -> img,0 ,0);
+	mlx_image_to_window(lim -> window, lim -> img, 0, 0);
 }
 
 void zoom_hook(double xdelta, double ydelta, void* param)
@@ -319,7 +377,7 @@ void zoom_hook(double xdelta, double ydelta, void* param)
 	}
 	else if (ydelta < 0)
 	{
-		adapt_lim(lim, -2);
+		adapt_lim(lim, 0.5);
 		printf("down\n");
 	}
 }
@@ -348,7 +406,7 @@ int32_t main(int32_t argc, const char* argv[])
 		puts(mlx_strerror(mlx_errno));
 		return(EXIT_FAILURE);
 	}
-	lim = init_lim(mlx, image);
+	lim = init_lim(mlx, image, 2, 2);			// +++ param 1: type; param2: julia_c
 	draw_image(image, lim);
     mlx_image_to_window(mlx, image, 0, 0);
 	mlx_loop_hook(mlx, move_view, &lim);
