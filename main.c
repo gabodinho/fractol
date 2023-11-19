@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   burning_ship.c                                     :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/19 23:57:09 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/20 00:14:58 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,12 +291,12 @@ void	reset_view(t_limits *lim)
 		lim -> y_min = -1.5;
 		lim -> y_max = 1.5;
 	}
-	else if (lim -> type == 2)
+	else if (lim -> type >= 2)
 	{
-		lim -> x_min = -1.5;
-		lim -> x_max = 1.5;
-		lim -> y_min = -1.5;
-		lim -> y_max = 1.5;
+		lim -> x_min = -2;
+		lim -> x_max = 2;
+		lim -> y_min = -2;
+		lim -> y_max = 2;
 	}
 	// keep in mind burning ship
 	lim -> dx = (lim -> x_max - lim -> x_min) / WIDTH;
