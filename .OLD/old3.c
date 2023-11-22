@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/20 00:14:58 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:20:18 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 #define HEIGHT 512
 #define THRESH 4
 #ifndef MAXRUNS
-# define MAXRUNS 100
+# define MAXRUNS 500
 #endif
 
 typedef double	(*t_f)(double *input1, double *input2);
@@ -101,17 +101,17 @@ void	set_c(int type, int param, double *c)
 {
 	if (type == 2)
 	{
-		if (param == 0)
+		if (param == 1)
 		{
 			c[0] = 0.285;
 			c[1] = 0.01;
 		}
-		else if (param == 1)
+		else if (param == 2)
 		{
 			c[0] = -0.4;
 			c[1] = 0.6;
 		}
-		else if (param == 2)
+		else if (param == 3)
 		{
 			c[0] = -0.8;
 			c[1] = 0.156;
@@ -168,7 +168,6 @@ int	cmap_def(int steps)
 	uint8_t	red;
 	uint8_t	green;
 
-//	printf("%d", steps);
 	if (steps >= MAXRUNS)
 	{
 		green = 0;
@@ -354,15 +353,9 @@ void zoom_hook(double xdelta, double ydelta, void* param)
 	lim = (t_limits *) param;
 	(void) xdelta;
 	if (ydelta > 0)
-	{
 		adapt_lim(lim, 2);
-		printf("up\n");
-	}
 	else if (ydelta < 0)
-	{
 		adapt_lim(lim, 0.5);
-		printf("down\n");
-	}
 }
 
 void	put_error(int code)
