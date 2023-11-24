@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/22 19:48:00 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:56:09 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <math.h>
 # include <MLX42/MLX42.h>
 # include <string.h>
+# include <ft_printf.h>
 # define WIDTH 512
 # define HEIGHT 512
 # define THRESH 4
@@ -51,24 +52,24 @@ typedef struct input_s
 	int	success;
 }	t_input;
 
-double		mandel_step(double *prev, double *c);
-double		burning_step(double *prev, double *c);
-int			steps_mandel(double *point, t_f handler);
-int			steps_julia(double *point, double *c);
-void		set_c(int type, int param, double *c);
+//static double		mandel_step(double *prev, double *c);
+//static double		burning_step(double *prev, double *c);
+//static int			steps_mandel(double *point, t_f handler);
+//static int			steps_julia(double *point, double *c);
+//static void		set_c(int type, int param, double *c);
 t_limits	init_lim(mlx_t *mlx, mlx_image_t *img, t_input input);
 int			get_steps(int i, int j, t_limits lim);
-int			cmap_def(int steps);
-int			cmap_advanced(int steps);
-int			get_colour(int steps, int cmap);
-void		put_colour(uint8_t *pixels, int rgba);
+//static int			cmap_def(int steps);
+//static int			cmap_advanced(int steps);
+//static int			get_colour(int steps, int cmap);
+//static void		put_colour(uint8_t *pixels, int rgba);
 void		draw_image(mlx_image_t *img, t_limits lim);
-void		move_lim(t_limits *lim, int direc);
-void		reset_view(t_limits *lim);
+//static void		move_lim(t_limits *lim, int direc);
+//static void		reset_view(t_limits *lim);
 void		move_view(void *input);
-void		adapt_lim(t_limits *lim, double rate);
+//static void		adapt_lim(t_limits *lim, double rate);
 void		zoom_hook(double xdelta, double ydelta, void *param);
 void		put_error(int code);
-void		check_semantic(t_input res);
+//static void		check_semantic(t_input res);
 t_input		check_input(int32_t argc, const char *argv[]);
 #endif

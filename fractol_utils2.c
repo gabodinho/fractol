@@ -6,9 +6,11 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 17:26:39 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/22 18:46:29 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:02:50 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <fractol.h>
 
 // black to red
 static int	cmap_def(int steps)

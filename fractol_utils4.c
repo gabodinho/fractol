@@ -6,9 +6,11 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 18:26:21 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/22 19:00:13 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:03:19 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <fractol.h>
 
 void	adapt_lim(t_limits *lim, double rate)
 {

@@ -6,9 +6,11 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 18:23:51 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/22 18:57:52 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:58:57 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <fractol.h>
 
 void	set_c(int type, int param, double *c)
 {
@@ -40,8 +42,8 @@ t_limits	init_lim(mlx_t *mlx, mlx_image_t *img, t_input input)
 	lim.img = img;
 	lim.type = input.type;
 	lim.cmap = input.cmap;
-	set_c(type, input.julia, lim.c);
-	if (type == 1)
+	set_c(lim.type, input.julia, lim.c);
+	if (lim.type == 1)
 	{
 		lim.x_min = -2.5;
 		lim.x_max = 0.5;

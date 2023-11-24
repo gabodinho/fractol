@@ -6,9 +6,11 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 17:23:50 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/22 18:42:55 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:02:30 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <fractol.h>
 
 static double	mandel_step(double *prev, double *c)
 {
