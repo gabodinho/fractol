@@ -6,40 +6,53 @@
 #    By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/22 19:51:00 by ggiertzu          #+#    #+#              #
-#    Updated: 2023/11/24 09:08:08 by ggiertzu         ###   ########.fr        #
+#    Updated: 2023/11/26 15:24:55 by ggiertzu         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	:= fractol
-#CFLAGS	:= -Wextra -Wall -Werror -Wunreachable-code -Ofast
-CFLAGS	:= -g -O0 -Wall -Werror -Wextra
+CFLAGS	:= -g -O0 -Wall -Werror -Wextra -pthread -Ofast
 CC		:= gcc
-LIBMLX	:= ../../MLX42
+LIBMLX_D:= ./MLX42/build
+LIBMLX_L:= libmlx42.a
+LIBMLX	:= $(LIBMLX_D)/$(LIBMLX_L)
+LIBFT_D	:= ./libft
+LIBFT_L	:= libftprintf.a
+LIBFT	:= $(LIBFT_D)/$(LIBFT_L)
 
-HEADERS	:= -I ./include -I $(LIBMLX)/include -I ./libft -I .
-LIBS	:= $(LIBMLX)/build/libmlx42.a -ldl -lglfw -pthread -lm -L./libft/ -lftprintf
+
+HEADERS	:= -I MLX42/include -I $(LIBFT_D) -I .
+LIBS	:= $(LIBMLX) $(LIBFT) -ldl -lglfw -lm
 SRCS	:= fractol_main.c fractol_utils1.c fractol_utils2.c fractol_utils3.c \
 			fractol_utils4.c
 OBJS	:= ${SRCS:.c=.o}
 
 all: $(NAME)
 
-#libmlx:
-#	@cmake $(LIBMLX) -B $(LIBMLX)/build && make -C $(LIBMLX)/build -j4
+bonus: all
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(HEADERS)
 
-$(NAME): $(OBJS)
+$(NAME): $(LIBFT) $(LIBMLX) $(OBJS)
 	$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME)
 
+$(LIBMLX):
+	@if [ ! -d MLX42 ]; then \
+		echo "Downloading miniLibX..."; \
+		git clone https://github.com/codam-coding-college/MLX42.git; \
+		cd MLX42; cmake -B build; cmake --build build -j4; \
+	fi
+
+$(LIBFT):
+	make -C $(LIBFT_D)
 clean:
-	@rm -rf $(OBJS)
-#	@rm -rf $(LIBMLX)/build
-
+	rm -rf $(OBJS)
+	make clean -C $(LIBFT_D)
 fclean: clean
-	@rm -rf $(NAME)
-
+	rm -rf $(NAME)
+	rm -rf MLX42
+	make fclean -C $(LIBFT_D)
 re: clean all
 
 .PHONY: all, clean, fclean, re, libmlx

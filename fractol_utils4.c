@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 18:26:21 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/24 08:03:19 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2023/11/24 17:18:19 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,15 +50,15 @@ void	put_error(int code)
 	if (code < 3)
 	{
 		if (code == 1)
-			printf("Invalid parameter(s)\n");
+			ft_printf("Invalid parameter(s)\n");
 		else if (code == 2)
-			printf("missing/too many parameter(s)\n");
-		printf(" 1st param: 1=mandelbrot, 2=julia, 3=burning ship\n");
-		printf(" [2nd param] (julia points): from 1 to 3, def=1\n");
-		printf(" [3rd param] (colour map): from 1 to 2, def=1\n");
+			ft_printf("missing/too many parameter(s)\n");
+		ft_printf(" 1st param: 1=mandelbrot, 2=julia, 3=burning ship\n");
+		ft_printf(" [2nd param] (julia points): from 1 to 3, def=1\n");
+		ft_printf(" [3rd param] (colour map): from 1 to 2, def=1\n");
 	}
 	else
-		printf("mlx error");
+		ft_printf("mlx error");
 	exit(EXIT_FAILURE);
 }
 
@@ -81,16 +81,16 @@ t_input	check_input(int32_t argc, const char *argv[])
 
 	if (argc > 1 && argc < 5)
 	{
-		res.type = atoi(argv[1]);//------------------change for ft_atoi !!
+		res.type = ft_atoi(argv[1]);
 		res.julia = 1;
 		res.cmap = 1;
 	}
 	else
 		put_error(2);
 	if (argc >= 3)
-		res.julia = atoi(argv[2]);
+		res.julia = ft_atoi(argv[2]);
 	if (argc == 4)
-		res.cmap = atoi(argv[3]);
+		res.cmap = ft_atoi(argv[3]);
 	check_semantic(res);
 	return (res);
 }
