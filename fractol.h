@@ -6,7 +6,7 @@
 /*   By: ggiertzu <ggiertzu@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/05 11:57:54 by ggiertzu          #+#    #+#             */
-/*   Updated: 2023/11/26 15:43:51 by ggiertzu         ###   ########.fr       */
+/*   Updated: 2024/01/26 22:29:41 by ggiertzu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 # include <math.h>
 # include <MLX42/MLX42.h>
 # include <ft_printf.h>
-# define WIDTH 512
-# define HEIGHT 512
+# define WIDTH 1024
+# define HEIGHT 1024
 # define THRESH 4
 # ifndef MAXRUNS
-#  define MAXRUNS 500 
+#  define MAXRUNS 100 
 # endif
 
 typedef double	(*t_f)(double *input1, double *input2);

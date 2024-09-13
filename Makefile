@@ -6,12 +6,14 @@
 #    By: ggiertzu <ggiertzu@student.42berlin.d      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/22 19:51:00 by ggiertzu          #+#    #+#              #
-#    Updated: 2023/11/26 15:24:55 by ggiertzu         ###   ########.fr        #
+#    Updated: 2024/01/26 22:43:28 by ggiertzu         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	:= fractol
-CFLAGS	:= -g -O0 -Wall -Werror -Wextra -pthread -Ofast
+#	RUNS	?= 100
+#	CFLAGS	:= -g -O0 -D MAXRUNS=$(RUNS) -Wall -Werror -Wextra -pthread -Ofast
+CFLAGS  := -g -O0 -Wall -Werror -Wextra -pthread -Ofast
 CC		:= gcc
 LIBMLX_D:= ./MLX42/build
 LIBMLX_L:= libmlx42.a
